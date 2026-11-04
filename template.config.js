@@ -2,7 +2,7 @@
  * React Native CLI template configuration.
  *
  * Used by:
- *   npx @react-native-community/cli init MyApp --template martinssilva/app_laucher_cli
+ *   npx @react-native-community/cli init MyApp --template martinssilva/app_launcher_cli
  *
  * - `templateDir`: folder copied into the new project.
  * - `placeholderName`: every occurrence (file contents, file and folder names,

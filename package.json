@@ -6,7 +6,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/martinssilva/app_laucher_cli.git"
+    "url": "git+https://github.com/martinssilva/app_launcher_cli.git"
   },
   "keywords": [
     "react-native",

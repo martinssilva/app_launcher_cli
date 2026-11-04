@@ -1,7 +1,7 @@
 # HelloWorld
 
 React Native CLI app generated from
-[rn-app-launcher](https://github.com/martinssilva/app_laucher_cli).
+[rn-app-launcher](https://github.com/martinssilva/app_launcher_cli).
 
 TypeScript · Redux Toolkit + RTK Query · Axios · React Navigation ·
 Reanimated · Gesture Handler · MMKV · i18next · Jest + Testing Library

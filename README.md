@@ -5,7 +5,7 @@ Navigation, Reanimated and Gesture Handler. The `main` branch is the base
 launcher; each `template/*` branch is a ready-to-use app model (office,
 shopping, finance, fitness).
 
-[![CI](https://github.com/martinssilva/app_laucher_cli/actions/workflows/ci.yml/badge.svg)](https://github.com/martinssilva/app_laucher_cli/actions/workflows/ci.yml)
+[![CI](https://github.com/martinssilva/app_launcher_cli/actions/workflows/ci.yml/badge.svg)](https://github.com/martinssilva/app_launcher_cli/actions/workflows/ci.yml)
 ![React Native](https://img.shields.io/badge/React%20Native-0.88-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
@@ -30,10 +30,10 @@ CLI** (no Expo): you get plain `android/` and `ios/` projects from day one.
 
 ```bash
 # Base launcher (main)
-npx @react-native-community/cli@latest init MyApp --template martinssilva/app_laucher_cli
+npx @react-native-community/cli@latest init MyApp --template martinssilva/app_launcher_cli
 
 # A specific app model (any template/* branch)
-npx @react-native-community/cli@latest init MyApp --template martinssilva/app_laucher_cli#template/office
+npx @react-native-community/cli@latest init MyApp --template martinssilva/app_launcher_cli#template/office
 ```
 
 Useful options: `--title "My App"` (display name), `--package-name com.company.myapp`,
