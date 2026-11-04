@@ -1,0 +1,27 @@
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Dependencies installed while developing the template in place
+node_modules/
+template/vendor/bundle/
+template/ios/Pods/
+template/coverage/
+
+# Lockfiles are intentionally not shipped with the template
+template/package-lock.json
+template/yarn.lock
+
+# Native build output
+template/android/.gradle/
+template/android/build/
+template/android/app/build/
+template/android/app/.cxx/
+template/android/local.properties
+template/ios/build/
+template/ios/*.xcworkspace/xcuserdata/
+template/ios/*.xcodeproj/xcuserdata/
+template/ios/.xcode.env.local
+template/.metro-health-check*

@@ -1,0 +1,40 @@
+{
+  "name": "rn-app-launcher",
+  "version": "0.1.0",
+  "description": "React Native CLI starter kit with TypeScript, Redux Toolkit, Axios, React Navigation, Reanimated and Gesture Handler.",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martinssilva/app_laucher_cli.git"
+  },
+  "keywords": [
+    "react-native",
+    "react-native-cli",
+    "template",
+    "starter-kit",
+    "boilerplate",
+    "typescript",
+    "redux-toolkit",
+    "axios",
+    "react-navigation",
+    "reanimated"
+  ],
+  "files": [
+    "template",
+    "!template/node_modules",
+    "!template/ios/Pods",
+    "!template/ios/build",
+    "!template/android/build",
+    "!template/android/app/build",
+    "!template/android/.gradle",
+    "!template/vendor",
+    "!template/coverage",
+    "!template/package-lock.json",
+    "!template/yarn.lock",
+    "template.config.js"
+  ],
+  "scripts": {
+    "test:template": "bash scripts/test-template.sh"
+  }
+}
