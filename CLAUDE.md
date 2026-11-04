@@ -54,9 +54,10 @@ Run `npm run test:template` after changing dependencies, config files, dotfiles,
 - **The API layer never imports the store.** When the refresh fails, the client calls the handler that the store registers with `setSessionExpiredHandler` (`app/store/store.ts`), which dispatches `endSession()` (clear tokens, `signedOut`, `resetApiState`).
 - **Store**: slices are registered in `app/store/rootReducer.ts`. `makeStore()` is the non-persisted store (tests); `makePersistedStore()` is the app store (persists only `auth` and `settings` to MMKV). `app/store/index.ts` creates the app singleton on import, so features import from `@/app/store/hooks` and `@/app/store/types`, never from `@/app/store`.
 - **Features** (`features/<domain>/`) own their `api/` (endpoints added with `baseApi.enhanceEndpoints({ addTagTypes }).injectEndpoints(...)`), `screens/`, slice, `types.ts` and `__tests__/`. Every new endpoint also gets a route in `services/api/mock/handlers.ts`.
-- **Mock API**: an axios adapter enabled only when `env.useMockApi` (development). Unknown routes fall through to the real network. Login accepts any e-mail with a 6+ character password; `wrong-password` returns 401.
+- **Mock API**: an axios adapter enabled only when `env.useMockApi` (development). Unknown routes fall through to the real network. Login accepts any e-mail with a 6+ character password; `wrong-password` returns 401, sign-up with `taken@example.com` returns 409, and the only valid reset code is `123456` (constants in `services/api/mock/db.ts`).
 - **Auth flow**: `app/navigation/RootNavigator.tsx` renders Login or `MainTabs` + stack screens from `selectIsAuthenticated`, so sign-in/out never navigates manually. Param lists are in `app/navigation/types.ts` (also declared globally for `useNavigation`).
 - **Environments**: `config/env.ts` has one config per environment. `APP_ENV` is inlined by `babel-plugin-transform-inline-environment-variables`, and Metro's `cacheVersion` includes it. Read configuration through `env`, not `process.env`.
+- **Forms**: `useZodForm(createXSchema, { defaultValues })` + `FormTextField` (`components/form`). Schema factories receive `t` so messages are translated (auth schemas in `features/auth/schemas.ts`, shared field rules in `utils/validation.ts`). `Button` calls `onPress()` without the press event, so `handleSubmit(...)` can be passed to it directly.
 - **Tokens**: `services/storage/tokenStorage.ts` has an async interface (MMKV today); moving to the Keychain changes only that file.
 - **UI**: colors, spacing and typography come from the theme (`makeStyles(theme => ...)`, `useTheme()`); text goes through the `Text` component from `@/components`; user-facing strings use `t()` with keys in `i18n/locales/en.ts` (source of truth; `pt-BR.ts` is typed against it, so a missing key fails typecheck). Interactive elements and screens get a `testID` from `utils/testIDs.ts`. Theme and language preferences live in the `settings` slice and are applied by `PreferencesProvider` (`app/providers/AppProviders.tsx`).
 
@@ -69,6 +70,7 @@ Run `npm run test:template` after changing dependencies, config files, dotfiles,
 
 ## Gotchas
 
+- Jest loads packages' CommonJS builds, Metro loads their ESM builds: a package can pass every test and still break the bundle (zod v4 needs `@babel/plugin-transform-export-namespace-from` in `babel.config.js`). `npm run test:template` builds release bundles and catches this.
 - Stay on ESLint 8.57: `@react-native/eslint-config/flat` crashes on ESLint 9 (eslint-plugin-ft-flow uses a removed API).
 - `process` is not typed in React Native; `config/env.ts` uses an intentional `@ts-ignore` so Babel can inline `process.env.APP_ENV`.
 - Reanimated shared values use `.get()`/`.set()` (the react-hooks v7 rules flag `.value` mutation).

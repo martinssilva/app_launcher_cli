@@ -1,5 +1,10 @@
-import React from 'react';
-import { TextInput, type TextInputProps, View } from 'react-native';
+import React, { type Ref } from 'react';
+import {
+  TextInput,
+  type TextInputInstance,
+  type TextInputProps,
+  View,
+} from 'react-native';
 
 import { makeStyles, useTheme } from '@/theme';
 
@@ -8,15 +13,23 @@ import { Text } from './Text';
 export interface TextFieldProps extends TextInputProps {
   label: string;
   error?: string;
+  ref?: Ref<TextInputInstance>;
 }
 
-export function TextField({ label, error, style, ...rest }: TextFieldProps) {
+export function TextField({
+  label,
+  error,
+  style,
+  ref,
+  ...rest
+}: TextFieldProps) {
   const theme = useTheme();
   const styles = useStyles();
   return (
     <View style={styles.container}>
       <Text variant="label">{label}</Text>
       <TextInput
+        ref={ref}
         accessibilityLabel={label}
         placeholderTextColor={theme.colors.textMuted}
         style={[styles.input, error ? styles.inputError : null, style]}

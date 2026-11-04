@@ -4,8 +4,12 @@ import { useTranslation } from 'react-i18next';
 
 import { useAppSelector } from '@/app/store/hooks';
 import { selectIsAuthenticated } from '@/features/auth/authSlice';
+import { ForgotPasswordScreen } from '@/features/auth/screens/ForgotPasswordScreen';
 import { LoginScreen } from '@/features/auth/screens/LoginScreen';
+import { RegisterScreen } from '@/features/auth/screens/RegisterScreen';
+import { ResetPasswordScreen } from '@/features/auth/screens/ResetPasswordScreen';
 import { ItemDetailsScreen } from '@/features/home/screens/ItemDetailsScreen';
+import { useTheme } from '@/theme';
 
 import { MainTabs } from './MainTabs';
 import type { RootStackParamList } from './types';
@@ -18,6 +22,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  */
 export function RootNavigator() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   return (
@@ -39,11 +44,27 @@ export function RootNavigator() {
           />
         </Stack.Group>
       ) : (
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false, animationTypeForReplace: 'pop' }}
-        />
+        <Stack.Group
+          screenOptions={{
+            title: '',
+            headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+            headerTintColor: theme.colors.primary,
+            headerStyle: { backgroundColor: theme.colors.background },
+          }}
+        >
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false, animationTypeForReplace: 'pop' }}
+          />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+          />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+        </Stack.Group>
       )}
     </Stack.Navigator>
   );

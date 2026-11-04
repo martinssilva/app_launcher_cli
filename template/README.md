@@ -26,7 +26,8 @@ npm run ios
 ```
 
 In development the app talks to an **in-app mock API**, so it runs with no
-backend: sign in with any e-mail and a password of 6+ characters.
+backend: sign in with any e-mail and a password of 6+ characters (the
+password reset code is `123456`).
 
 ## Scripts
 
@@ -87,12 +88,15 @@ Imports use the `@/` alias for `src/` (configured in `babel.config.js`,
 
 Expected backend contract (adapt `features/auth` and `client.ts` to yours):
 
-| Endpoint             | Body                  | Response                                          |
-| -------------------- | --------------------- | ------------------------------------------------- |
-| `POST /auth/login`   | `{ email, password }` | `{ user, tokens: { accessToken, refreshToken } }` |
-| `POST /auth/refresh` | `{ refreshToken }`    | `{ accessToken, refreshToken }`                   |
-| `POST /auth/logout`  | –                     | `204`                                             |
-| `GET /me`            | –                     | `user`                                            |
+| Endpoint                     | Body                        | Response                                          |
+| ---------------------------- | --------------------------- | ------------------------------------------------- |
+| `POST /auth/login`           | `{ email, password }`       | `{ user, tokens: { accessToken, refreshToken } }` |
+| `POST /auth/register`        | `{ name, email, password }` | same as login (`409` if the e-mail exists)        |
+| `POST /auth/forgot-password` | `{ email }`                 | `204` (always, to not reveal registered e-mails)  |
+| `POST /auth/reset-password`  | `{ email, code, password }` | `204` (`400` for an invalid code)                 |
+| `POST /auth/refresh`         | `{ refreshToken }`          | `{ accessToken, refreshToken }`                   |
+| `POST /auth/logout`          | –                           | `204`                                             |
+| `GET /me`                    | –                           | `user`                                            |
 
 ### Mock API
 
@@ -101,6 +105,10 @@ Expected backend contract (adapt `features/auth` and `client.ts` to yours):
 locally; **unknown routes go to the real network**, so you can mock only what
 the backend does not have yet. Remove the folder (and the adapter line in
 `client.ts`) when you no longer need it.
+
+Special values to try the error paths: password `wrong-password` (login `401`),
+e-mail `taken@example.com` (sign-up `409`) and any reset code other than
+`123456` (`400`).
 
 ### State
 
@@ -156,6 +164,24 @@ i18next with `en` (source of truth) and `pt-BR`. Keys are type-checked:
 a missing key in `pt-BR.ts` is a TypeScript error. The device language is
 detected with `react-native-localize`; the user can override it in Settings.
 
+### Forms
+
+`react-hook-form` + `zod`. Schemas are factories that receive `t`, so
+validation messages are translated (`features/auth/schemas.ts`; shared fields
+such as e-mail and password rules in `utils/validation.ts`):
+
+```tsx
+const { control, handleSubmit } = useZodForm(createLoginSchema, {
+  defaultValues: { email: '', password: '' },
+});
+const onSubmit = handleSubmit(values => login(values));
+
+<FormTextField control={control} name="email" label={t('auth.email')} />
+<Button title={t('auth.submit')} onPress={onSubmit} />
+```
+
+`FormTextField` wires value, blur, focus (`setFocus`) and the error message.
+
 ### SVG
 
 `.svg` files are imported as React components (`react-native-svg-transformer`).
@@ -183,6 +209,7 @@ Change `src/assets/bootsplash/logo.svg` and the `--background` color in the
    if needed, a slice.
 2. Inject endpoints into `baseApi`; add mock routes in
    `src/services/api/mock/handlers.ts` if the backend is not ready.
+   Forms use `useZodForm` with a schema factory next to the feature.
 3. Register reducers in `src/app/store/rootReducer.ts` and screens/params in
    `src/app/navigation`.
 4. Add translations to `en.ts` and `pt-BR.ts`, and testIDs to `testIDs.ts`.

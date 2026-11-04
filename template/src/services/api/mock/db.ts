@@ -19,6 +19,12 @@ interface Session {
   expiresAt: number;
 }
 
+/** Code accepted by `POST /auth/reset-password` in the mock API. */
+export const MOCK_RESET_CODE = '123456';
+
+/** E-mail that is always "already registered" (to try the 409 flow). */
+export const MOCK_TAKEN_EMAIL = 'taken@example.com';
+
 export const mockApiConfig = {
   /** Simulated network latency. Set to 0 in tests (see jest/setup.js). */
   delayMs: 400,
@@ -41,6 +47,8 @@ function seedItems(): MockItem[] {
 let tokenCounter = 0;
 
 export const mockDb = {
+  /** Users created with `POST /auth/register`, by e-mail. */
+  users: new Map<string, MockUser>(),
   items: seedItems(),
   accessTokens: new Map<string, Session>(),
   refreshTokens: new Map<string, MockUser>(),
@@ -69,6 +77,7 @@ export function findSession(accessToken: string): Session | undefined {
 export function resetMockApi(): void {
   tokenCounter = 0;
   mockDb.items = seedItems();
+  mockDb.users.clear();
   mockDb.accessTokens.clear();
   mockDb.refreshTokens.clear();
 }

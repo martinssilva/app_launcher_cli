@@ -49,7 +49,7 @@ npm run android   # or: npm run ios
 ```
 
 The app starts with an **in-app mock API**: sign in with any e-mail and a
-password of 6+ characters. See the generated `README.md` for the full guide
+password of 6+ characters (the password reset code is `123456`). See the generated `README.md` for the full guide
 (architecture, environments, testing, production checklist).
 
 > **Requirements:** Node.js >= 22.11, JDK 17, Android Studio, and Xcode +
@@ -62,26 +62,27 @@ password of 6+ characters. See the generated `README.md` for the full guide
 
 ## What is included
 
-| Area              | Stack                                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------- |
-| Core              | React Native 0.88 (New Architecture, Hermes), React 19, TypeScript (strict)                             |
-| Navigation        | `@react-navigation/native` + `native-stack` + `bottom-tabs`, `react-native-screens`, `react-native-safe-area-context` |
-| Gestures/animation | `react-native-gesture-handler` 3, `react-native-reanimated` 4 (+ `react-native-worklets`)              |
-| State             | Redux Toolkit + **RTK Query** (with an axios base query), typed hooks                                   |
-| HTTP              | Axios instance with auth interceptor, single-flight token refresh, normalized `ApiError`                |
-| Persistence       | `react-native-mmkv` + `redux-persist` (auth and settings), isolated token storage                       |
-| Environments      | `development` / `staging` / `production` selected by `APP_ENV` at build time                           |
-| i18n              | `i18next` + `react-i18next` + `react-native-localize`, type-checked keys, `en` and `pt-BR`              |
-| Theme             | Design tokens, light/dark themes, `makeStyles`, React Navigation theme                                  |
-| Assets            | `react-native-svg` + `react-native-svg-transformer` (SVG as components)                                 |
-| Splash            | `react-native-bootsplash` (generated from an SVG, hidden when navigation is ready)                      |
-| Quality           | ESLint (`@react-native/eslint-config`), Prettier, Jest + React Native Testing Library, `testID`s everywhere |
-| Dev experience    | `@/` import alias, mock API adapter, `npm run validate`, CI that generates and validates a fresh app    |
+| Area               | Stack                                                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Core               | React Native 0.88 (New Architecture, Hermes), React 19, TypeScript (strict)                                           |
+| Navigation         | `@react-navigation/native` + `native-stack` + `bottom-tabs`, `react-native-screens`, `react-native-safe-area-context` |
+| Gestures/animation | `react-native-gesture-handler` 3, `react-native-reanimated` 4 (+ `react-native-worklets`)                             |
+| State              | Redux Toolkit + **RTK Query** (with an axios base query), typed hooks                                                 |
+| Forms              | `react-hook-form` + `zod` (`useZodForm`, `FormTextField`, schemas with translated messages)                           |
+| HTTP               | Axios instance with auth interceptor, single-flight token refresh, normalized `ApiError`                              |
+| Persistence        | `react-native-mmkv` + `redux-persist` (auth and settings), isolated token storage                                     |
+| Environments       | `development` / `staging` / `production` selected by `APP_ENV` at build time                                          |
+| i18n               | `i18next` + `react-i18next` + `react-native-localize`, type-checked keys, `en` and `pt-BR`                            |
+| Theme              | Design tokens, light/dark themes, `makeStyles`, React Navigation theme                                                |
+| Assets             | `react-native-svg` + `react-native-svg-transformer` (SVG as components)                                               |
+| Splash             | `react-native-bootsplash` (generated from an SVG, hidden when navigation is ready)                                    |
+| Quality            | ESLint (`@react-native/eslint-config`), Prettier, Jest + React Native Testing Library, `testID`s everywhere           |
+| Dev experience     | `@/` import alias, mock API adapter, `npm run validate`, CI that generates and validates a fresh app                  |
 
-Example features in the base app: **Login** (validation, API errors, session
-persistence), **Home** (RTK Query list with pull-to-refresh, loading/empty/error
-states, details screen) and **Settings** (theme, language, environment info,
-sign out).
+Example features in the base app: **Auth** (login, sign-up and password
+recovery with a code; form validation, API errors, session persistence),
+**Home** (RTK Query list with pull-to-refresh, loading/empty/error states,
+details screen) and **Settings** (theme, language, environment info, sign out).
 
 ```
 template/src/
@@ -97,13 +98,13 @@ template/src/
 
 ## Branches and templates
 
-| Branch              | Template | Adds on top of the base                                                  | Status    |
-| ------------------- | -------- | ------------------------------------------------------------------------ | --------- |
-| `main`              | Launcher | The base described above                                                 | Available |
-| `template/office`   | Office   | Complete auth, calendar/agenda, filtered lists, document upload          | Planned   |
-| `template/shopping` | Shopping | Catalog, cart, checkout, favorites, search                               | Planned   |
-| `template/finance`  | Finance  | WebSocket real-time quotes, charts, watchlist                            | Planned   |
-| `template/fitness`  | Fitness  | `react-hook-form` + `zod`, CRUD, offline mode, history/progress          | Planned   |
+| Branch              | Template | Adds on top of the base                                         | Status    |
+| ------------------- | -------- | --------------------------------------------------------------- | --------- |
+| `main`              | Launcher | The base described above                                        | Available |
+| `template/office`   | Office   | Complete auth, calendar/agenda, filtered lists, document upload | Planned   |
+| `template/shopping` | Shopping | Catalog, cart, checkout, favorites, search                      | Planned   |
+| `template/finance`  | Finance  | WebSocket real-time quotes, charts, watchlist                   | Planned   |
+| `template/fitness`  | Fitness  | `react-hook-form` + `zod`, CRUD, offline mode, history/progress | Planned   |
 
 Every template branch is created from `main` and receives base updates by
 merging `main` (see [below](#keeping-templates-in-sync-with-main)).
