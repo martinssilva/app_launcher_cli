@@ -21,6 +21,8 @@ module.exports = {
         },
       },
     ],
+    // `export * as ns from '...'` (used by zod v4) is not covered by the RN preset.
+    '@babel/plugin-transform-export-namespace-from',
     // Inlines `process.env.APP_ENV` at build time (see src/config/env.ts).
     ['transform-inline-environment-variables', { include: ['APP_ENV'] }],
     // Must be listed last.

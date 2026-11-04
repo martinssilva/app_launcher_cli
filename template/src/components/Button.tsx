@@ -62,7 +62,8 @@ export function Button({
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
-      onPress={onPress}
+      // Call without the press event so handlers like RHF's handleSubmit can be passed directly.
+      onPress={onPress ? () => onPress() : undefined}
       onPressIn={() => scale.set(withSpring(0.97))}
       onPressOut={() => scale.set(withSpring(1))}
       style={[

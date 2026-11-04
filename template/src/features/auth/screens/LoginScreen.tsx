@@ -1,142 +1,130 @@
-import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import LogoIcon from '@/assets/icons/logo.svg';
-import { Button, Screen, Text, TextField } from '@/components';
+import type { RootStackScreenProps } from '@/app/navigation/types';
+import { Button, FormTextField, Text, useZodForm } from '@/components';
 import { env } from '@/config';
-import { makeStyles, useTheme } from '@/theme';
-import { getErrorMessage, hasMinLength, isValidEmail, testIDs } from '@/utils';
+import { makeStyles } from '@/theme';
+import { getErrorMessage, testIDs } from '@/utils';
 
 import { useLoginMutation } from '../api/authApi';
+import { AuthLayout } from '../components/AuthLayout';
+import { createLoginSchema } from '../schemas';
 
-const MIN_PASSWORD_LENGTH = 6;
-
-interface FormErrors {
-  email?: string;
-  password?: string;
-}
-
-export function LoginScreen() {
+export function LoginScreen({
+  navigation,
+  route,
+}: RootStackScreenProps<'Login'>) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const styles = useStyles();
   const [login, { isLoading, error }] = useLoginMutation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const { control, handleSubmit, setFocus, setValue } = useZodForm(
+    createLoginSchema,
+    { defaultValues: { email: route.params?.email ?? '', password: '' } },
+  );
 
-  const validate = (): FormErrors => {
-    const errors: FormErrors = {};
-    if (!isValidEmail(email)) {
-      errors.email = t('auth.invalidEmail');
+  // Coming back from the password reset: prefill the e-mail.
+  const emailParam = route.params?.email;
+  useEffect(() => {
+    if (emailParam) {
+      setValue('email', emailParam);
     }
-    if (!hasMinLength(password, MIN_PASSWORD_LENGTH)) {
-      errors.password = t('auth.passwordTooShort', {
-        min: MIN_PASSWORD_LENGTH,
-      });
-    }
-    return errors;
-  };
+  }, [emailParam, setValue]);
 
-  const handleSubmit = () => {
-    const errors = validate();
-    setFormErrors(errors);
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
-    // Success is handled in authApi (tokens + signedIn); the navigator reacts to it.
-    login({ email: email.trim(), password });
-  };
+  // Success is handled in authApi (tokens + signedIn); the navigator reacts to it.
+  const onSubmit = handleSubmit(values => login(values));
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    <AuthLayout
+      title={t('auth.title')}
+      subtitle={t('auth.subtitle')}
+      showLogo
+      withHeader={false}
+      testID={testIDs.login.screen}
     >
-      <Screen
-        scroll
-        edges={['top', 'bottom', 'left', 'right']}
-        contentStyle={styles.content}
-        testID={testIDs.login.screen}
-      >
-        <View style={styles.header}>
-          <LogoIcon width={64} height={64} color={theme.colors.primary} />
-          <Text variant="title" align="center">
-            {t('auth.title')}
-          </Text>
-          <Text tone="muted" align="center">
-            {t('auth.subtitle')}
-          </Text>
-        </View>
+      {route.params?.passwordReset ? (
+        <Text tone="success" align="center" testID={testIDs.login.notice}>
+          {t('auth.passwordResetDone')}
+        </Text>
+      ) : null}
 
-        <TextField
-          label={t('auth.email')}
-          placeholder={t('auth.emailPlaceholder')}
-          value={email}
-          onChangeText={setEmail}
-          error={formErrors.email}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          returnKeyType="next"
-          testID={testIDs.login.emailInput}
-        />
-        <TextField
-          label={t('auth.password')}
-          placeholder={t('auth.passwordPlaceholder')}
-          value={password}
-          onChangeText={setPassword}
-          error={formErrors.password}
-          secureTextEntry
-          autoComplete="password"
-          textContentType="password"
-          returnKeyType="done"
-          onSubmitEditing={handleSubmit}
-          testID={testIDs.login.passwordInput}
-        />
+      <FormTextField
+        control={control}
+        name="email"
+        label={t('auth.email')}
+        placeholder={t('auth.emailPlaceholder')}
+        autoCapitalize="none"
+        autoComplete="email"
+        keyboardType="email-address"
+        textContentType="emailAddress"
+        returnKeyType="next"
+        onSubmitEditing={() => setFocus('password')}
+        testID={testIDs.login.emailInput}
+      />
+      <FormTextField
+        control={control}
+        name="password"
+        label={t('auth.password')}
+        placeholder={t('auth.passwordPlaceholder')}
+        secureTextEntry
+        autoComplete="password"
+        textContentType="password"
+        returnKeyType="done"
+        onSubmitEditing={() => onSubmit()}
+        testID={testIDs.login.passwordInput}
+      />
+      <Button
+        title={t('auth.forgotPassword')}
+        variant="ghost"
+        onPress={() => navigation.navigate('ForgotPassword')}
+        style={styles.forgotPassword}
+        testID={testIDs.login.forgotPasswordButton}
+      />
 
-        {error ? (
-          <Text
-            tone="danger"
-            align="center"
-            testID={testIDs.login.errorMessage}
-          >
-            {getErrorMessage(error, t, {
-              UNAUTHORIZED: t('auth.invalidCredentials'),
-            })}
-          </Text>
-        ) : null}
+      {error ? (
+        <Text tone="danger" align="center" testID={testIDs.login.errorMessage}>
+          {getErrorMessage(error, t, {
+            UNAUTHORIZED: t('auth.invalidCredentials'),
+          })}
+        </Text>
+      ) : null}
 
+      <Button
+        title={t('auth.submit')}
+        onPress={onSubmit}
+        loading={isLoading}
+        testID={testIDs.login.submitButton}
+      />
+
+      <View style={styles.footer}>
+        <Text tone="muted">{t('auth.noAccount')}</Text>
         <Button
-          title={t('auth.submit')}
-          onPress={handleSubmit}
-          loading={isLoading}
-          testID={testIDs.login.submitButton}
+          title={t('auth.createAccount')}
+          variant="ghost"
+          onPress={() => navigation.navigate('Register')}
+          testID={testIDs.login.registerButton}
         />
+      </View>
 
-        {env.useMockApi ? (
-          <Text variant="caption" tone="muted" align="center">
-            {t('auth.mockHint')}
-          </Text>
-        ) : null}
-      </Screen>
-    </KeyboardAvoidingView>
+      {env.useMockApi ? (
+        <Text variant="caption" tone="muted" align="center">
+          {t('auth.mockHint')}
+        </Text>
+      ) : null}
+    </AuthLayout>
   );
 }
 
 const useStyles = makeStyles(theme => ({
-  flex: {
-    flex: 1,
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: theme.spacing.xs,
   },
-  content: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  header: {
+  footer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
+    justifyContent: 'center',
+    flexWrap: 'wrap',
   },
 }));

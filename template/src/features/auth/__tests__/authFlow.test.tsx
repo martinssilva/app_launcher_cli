@@ -22,14 +22,17 @@ describe('auth flow', () => {
     const user = userEvent.setup();
     await renderWithProviders(<NavigationRoot />);
 
-    await user.type(screen.getByLabelText('E-mail'), 'not-an-email');
-    await user.type(screen.getByLabelText('Password'), '123');
     await user.press(screen.getByRole('button', { name: 'Sign in' }));
+    expect(await screen.findAllByText('This field is required.')).toHaveLength(
+      2,
+    );
 
-    expect(screen.getByText('Enter a valid e-mail address.')).toBeOnTheScreen();
+    await user.type(screen.getByLabelText('E-mail'), 'not-an-email');
+    await user.press(screen.getByRole('button', { name: 'Sign in' }));
     expect(
-      screen.getByText('The password must have at least 6 characters.'),
+      await screen.findByText('Enter a valid e-mail address.'),
     ).toBeOnTheScreen();
+    expect(await tokenStorage.getTokens()).toBeNull();
   });
 
   it('shows an error for invalid credentials', async () => {

@@ -1,4 +1,11 @@
-import { findSession, issueTokens, mockDb, type MockUser } from './db';
+import {
+  findSession,
+  issueTokens,
+  MOCK_RESET_CODE,
+  MOCK_TAKEN_EMAIL,
+  mockDb,
+  type MockUser,
+} from './db';
 
 export interface MockRequest {
   method: string;
@@ -59,8 +66,49 @@ export const mockRoutes: MockRoute[] = [
       ) {
         return { status: 401, data: { message: 'Invalid credentials' } };
       }
-      const user: MockUser = { id: '1', name: nameFromEmail(email), email };
+      const user: MockUser = mockDb.users.get(email) ?? {
+        id: '1',
+        name: nameFromEmail(email),
+        email,
+      };
       return { status: 200, data: { user, tokens: issueTokens(user) } };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/auth/register',
+    handler: ({ body }) => {
+      const name = readString(body, 'name').trim();
+      const email = readString(body, 'email').trim().toLowerCase();
+      const password = readString(body, 'password');
+      if (!name || !email.includes('@') || password.length < 6) {
+        return { status: 422, data: { message: 'Invalid data' } };
+      }
+      if (email === MOCK_TAKEN_EMAIL || mockDb.users.has(email)) {
+        return { status: 409, data: { message: 'E-mail already registered' } };
+      }
+      const user: MockUser = { id: String(mockDb.users.size + 2), name, email };
+      mockDb.users.set(email, user);
+      return { status: 201, data: { user, tokens: issueTokens(user) } };
+    },
+  },
+  {
+    method: 'POST',
+    path: '/auth/forgot-password',
+    // Always succeeds, so the API does not reveal which e-mails exist.
+    handler: () => ({ status: 204 }),
+  },
+  {
+    method: 'POST',
+    path: '/auth/reset-password',
+    handler: ({ body }) => {
+      if (readString(body, 'code').trim() !== MOCK_RESET_CODE) {
+        return { status: 400, data: { message: 'Invalid or expired code' } };
+      }
+      if (readString(body, 'password').length < 6) {
+        return { status: 422, data: { message: 'Invalid password' } };
+      }
+      return { status: 204 };
     },
   },
   {

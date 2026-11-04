@@ -1,4 +1,11 @@
-export { authApi, useGetMeQuery, useLoginMutation } from './api/authApi';
+export {
+  authApi,
+  useForgotPasswordMutation,
+  useGetMeQuery,
+  useLoginMutation,
+  useRegisterMutation,
+  useResetPasswordMutation,
+} from './api/authApi';
 export {
   authReducer,
   endSession,
@@ -10,5 +17,16 @@ export {
   userUpdated,
 } from './authSlice';
 export type { AuthState } from './authSlice';
+export * from './schemas';
+export { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
 export { LoginScreen } from './screens/LoginScreen';
-export type { LoginRequest, LoginResponse, User } from './types';
+export { RegisterScreen } from './screens/RegisterScreen';
+export { ResetPasswordScreen } from './screens/ResetPasswordScreen';
+export type {
+  ForgotPasswordRequest,
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  ResetPasswordRequest,
+  User,
+} from './types';
