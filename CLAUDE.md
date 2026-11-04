@@ -83,3 +83,11 @@ Run `npm run test:template` after changing dependencies, config files, dotfiles,
 - Code, comments, commits and READMEs in English; talk to the user in Portuguese (pt-BR). `PLAN.md` is written in pt-BR.
 - On template branches, keep edits to shared files (`rootReducer.ts`, `app/navigation/*`, locales, `testIDs.ts`, `package.json`) minimal so `merge main` stays painless. `CLAUDE.md` and `PLAN.md` are edited on `main`; a template branch may only append a section about its own domain to `CLAUDE.md`.
 - When a template becomes usable, update the branch table in the root `README.md` (Planned to Available) and `template/README.md`.
+
+## This branch: `template/office`
+
+- Office features: `features/agenda` (react-native-calendars, themed and translated in `components/AppCalendar.tsx` + `calendarLocales.ts`), `features/tasks` (RTK Query `infiniteQuery`), `features/documents` (`@react-native-documents/picker` + upload hook) and `features/account` (profile, change password). Mock data/routes in `services/api/mock/office/`, registered with one line in `mock/handlers.ts` and reset in `mock/db.ts`.
+- Touch points with the base (expect merge conflicts here when syncing `main`): `app/navigation/{types.ts,MainTabs.tsx,RootNavigator.tsx}`, the account buttons in `features/settings/screens/SettingsScreen.tsx`, the `// Office` blocks at the end of `i18n/locales/*.ts` and `utils/testIDs.ts`, `package.json`, `jest/setup.js` (picker mock, React Native `FormData`) and `mock/{handlers,db,mockAdapter}.ts`.
+- Dates are `YYYY-MM-DD` local strings (`utils/dates.ts`); never convert them through UTC.
+- Tests: `renderSignedInApp()` (`test-utils/session.tsx`) renders the whole app with a valid mock session. In Jest, a `FlatList` only calls `onEndReached` if its last item is rendered at mount: mount lists with their first page (`initialNumToRender` = page size) and scroll with `userEvent.scrollTo` passing `contentSize` and `layoutMeasurement`.
+- The mock API serializes responses (JSON round trip) so Redux never freezes mock database objects; office routes mutate those objects on PATCH.

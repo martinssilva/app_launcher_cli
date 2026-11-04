@@ -1,4 +1,4 @@
-import { cleanup } from '@testing-library/react-native';
+import { act, cleanup } from '@testing-library/react-native';
 
 import { mockApiConfig, resetMockApi } from '@/services/api/mock';
 import { clearAllStorage } from '@/services/storage';
@@ -12,6 +12,9 @@ mockApiConfig.delayMs = 0;
 jest.spyOn(logger, 'warn').mockImplementation(() => undefined);
 
 afterEach(async () => {
+  // Let timer-based UI work (FlatList batching, tab transitions) finish inside
+  // act(), otherwise it may log "not wrapped in act(...)" after the test body.
+  await act(() => new Promise<void>(resolve => setTimeout(resolve, 100)));
   // Unmount first, then drop RTK Query caches so no timers outlive the test.
   await cleanup();
   resetTestStores();

@@ -7,6 +7,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type MainTabParamList = {
   Home: undefined;
+  Agenda: undefined;
+  Tasks: undefined;
+  Documents: undefined;
   Settings: undefined;
 };
 
@@ -17,6 +20,11 @@ export type RootStackParamList = {
   ResetPassword: { email: string };
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   ItemDetails: { id: string; title: string };
+  // Office
+  EventForm: { eventId?: string; date?: string } | undefined;
+  TaskDetails: { id: string; title: string };
+  EditProfile: undefined;
+  ChangePassword: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

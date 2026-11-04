@@ -33,3 +33,32 @@ jest.mock('react-native-nitro-modules', () => ({
 jest.mock('react-native-worklets', () =>
   require('react-native-worklets/src/mock'),
 );
+
+// Office: the document picker is a TurboModule (no native side in Jest).
+jest.mock('@react-native-documents/picker', () => {
+  const errorCodes = {
+    OPERATION_CANCELED: 'OPERATION_CANCELED',
+    IN_PROGRESS: 'ASYNC_OP_IN_PROGRESS',
+    UNABLE_TO_OPEN_FILE_TYPE: 'UNABLE_TO_OPEN_FILE_TYPE',
+    NULL_PRESENTER: 'NULL_PRESENTER',
+  };
+  return {
+    pick: jest.fn().mockResolvedValue([
+      {
+        uri: 'file:///mock/report.pdf',
+        name: 'report.pdf',
+        type: 'application/pdf',
+        size: 1234,
+      },
+    ]),
+    keepLocalCopy: jest.fn(),
+    types: { allFiles: '*/*', pdf: 'application/pdf', images: 'image/*' },
+    errorCodes,
+    isErrorWithCode: error =>
+      typeof error === 'object' && error !== null && 'code' in error,
+  };
+});
+
+// Use React Native's FormData (file parts with `uri`) instead of Node's.
+// eslint-disable-next-line @react-native/no-deep-imports
+global.FormData = require('react-native/Libraries/Network/FormData').default;
