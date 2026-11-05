@@ -6,6 +6,9 @@ React Native CLI app generated from
 TypeScript · Redux Toolkit + RTK Query · Axios · React Navigation ·
 Reanimated · Gesture Handler · MMKV · i18next · Jest + Testing Library
 
+**Fitness template**: members, workouts and sessions that work offline, on
+top of the base launcher. See [Fitness features](#fitness-features).
+
 ---
 
 ## Getting started
@@ -42,6 +45,93 @@ password reset code is `123456`).
 | `npm test` / `test:watch` / `test:coverage`          | Jest + React Native Testing Library                                        |
 | `npm run validate`                                   | typecheck + lint + tests (run it before every PR)                          |
 | `npm run splash:generate`                            | Regenerates the native splash screen from `src/assets/bootsplash/logo.svg` |
+
+## Fitness features
+
+| Tab / screen          | What it does                                                                        | Screen (`features/fitness/screens`)        |
+| --------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------ |
+| Members               | Search members, create/edit/delete them (contact, goal, notes), sync status banner  | `MembersScreen`, `MemberFormScreen`        |
+| Member → Workouts     | Create/edit/delete workout plans with a list of exercises (sets, reps, load)        | `MemberDetailsScreen`, `WorkoutFormScreen` |
+| Member → Log session  | Check-in: workout, date, duration and the loads actually used                       | `SessionFormScreen`                        |
+| Member → Progress     | Attendance stats and calendar, sessions of a day, load evolution chart per exercise | `ProgressScreen`                           |
+| Sync (tap the banner) | Connection, last sync, queued changes and conflict resolution                       | `SyncScreen`                               |
+
+Libraries added by this template:
+[`@react-native-community/netinfo`](https://github.com/react-native-netinfo/react-native-netinfo)
+(native, autolinked: connection status),
+[`react-native-calendars`](https://github.com/wix/react-native-calendars)
+(pure JS: attendance calendar and date picker, themed and translated in
+`features/fitness/components`) and
+[`react-native-wagmi-charts`](https://github.com/coinjar/react-native-wagmi-charts)
+(pure JS on top of Reanimated, Gesture Handler and react-native-svg, which the
+base already has: load chart).
+
+### Offline mode
+
+The fitness screens never wait for the network: they read the **offline
+store** (`features/fitness/fitnessSlice.ts`), which redux-persist saves to
+MMKV (`fitness` in the `whitelist` of `src/app/store/store.ts`).
+
+- **Optimistic updates**: saving a form applies the change to the store
+  right away and appends it to a **queue** (`queue` in the same slice, also
+  persisted). Records created on the device get their id there (`nanoid`), so
+  workouts and sessions can reference a member created offline.
+- **Sync** (`features/fitness/sync/syncEngine.ts`): sends the queue **in
+  order**, one request at a time, then downloads fresh data
+  (`GET /members`, `/workouts`, `/sessions`). A download never overwrites
+  records that still have queued changes. It runs when the signed-in app
+  starts, after every change, when the connection comes back (NetInfo,
+  `features/network`), when the app returns to the foreground, on
+  pull-to-refresh and with **Sync now**.
+- **Failures**: network errors, timeouts, `5xx` and `429` keep the change at
+  the head of the queue and are retried on the next sync (the banner shows
+  that the sync failed).
+- **Conflicts** are explicit. Each change carries the `version` of the record
+  it was based on; the API answers `409` when someone else changed the record
+  first. The queue stops at that change (later changes wait, so the order is
+  kept) and the Sync screen shows both versions:
+  - changed on the server (`409`): **Keep my version** (sent again on top of
+    the server's version) or **Use the server version**;
+  - deleted on the server (`404`): **Restore with my changes** or **Discard**;
+  - rejected (`400`, `403`, `422`...): **Discard my changes**.
+- Signing out clears the offline store, including changes not synced yet.
+
+Contract for a real backend (implemented by the mock API):
+
+| Endpoint                                                     | Notes                                                                                          |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `GET /members`, `GET /members/:id`                           | Member: `{ id, name, email, phone, goal, notes, version }`                                     |
+| `POST /members`, `PATCH /members/:id`, `DELETE /members/:id` | Deleting a member deletes their workouts and sessions                                          |
+| `GET /workouts?memberId`, `GET/PATCH/DELETE /workouts/:id`   | Workout: `{ id, memberId, name, notes, exercises: [{ name, sets, reps, weightKg }], version }` |
+| `POST /workouts`                                             | `422` for an unknown `memberId`                                                                |
+| `GET /sessions?memberId&from&to`, `POST /sessions`           | Session: `{ id, memberId, workoutId, workoutName, date, durationMinutes, exercises, version }` |
+| `DELETE /sessions/:id`                                       | Sessions are not edited, only logged and deleted                                               |
+
+- `POST` receives the client `id`; a `POST` with an id that already exists is
+  a retry and returns the stored record (`200`).
+- `PATCH` sends the whole record plus the `version` it is based on; `DELETE`
+  sends it as `?version=`. A stale version gets `409`. The server increments
+  `version` on every change. A `DELETE` of a missing record (`404`) counts as
+  done.
+- Queued requests carry an `Idempotency-Key` header (the change id): a backend
+  should store the answer by key so a retry after a lost response is not
+  applied twice (the mock instead treats a `PATCH` identical to the current
+  record as a retry).
+- The sync downloads every record; with a large history, add `?since=` or
+  pagination to `GET /sessions`.
+
+Try it with the mock API: turn on airplane mode, create or edit members and
+workouts, log a session, then reconnect. To see a conflict without a second
+device, save a member whose notes contain `#conflict`: the mock answers `409`
+once, as if the front desk had changed that member first. The mock data
+(4 members, 4 workouts and two months of sessions with increasing loads) lives
+in `src/services/api/mock/fitness/`.
+
+Tests: `src/features/fitness/__tests__` covers the CRUD flows, the sync engine
+(order, conflicts, failures), offline → edit → reconnect, a restart with
+pending changes and the progress screen. `setNetworkState(online)`
+(`src/test-utils/network.ts`) simulates connectivity through NetInfo's Jest
+mock, and `fitnessMockConfig.outage` makes the mock API answer `503`.
 
 ## Project structure
 

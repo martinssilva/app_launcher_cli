@@ -8,6 +8,12 @@ import { ForgotPasswordScreen } from '@/features/auth/screens/ForgotPasswordScre
 import { LoginScreen } from '@/features/auth/screens/LoginScreen';
 import { RegisterScreen } from '@/features/auth/screens/RegisterScreen';
 import { ResetPasswordScreen } from '@/features/auth/screens/ResetPasswordScreen';
+import { MemberDetailsScreen } from '@/features/fitness/screens/MemberDetailsScreen';
+import { MemberFormScreen } from '@/features/fitness/screens/MemberFormScreen';
+import { ProgressScreen } from '@/features/fitness/screens/ProgressScreen';
+import { SessionFormScreen } from '@/features/fitness/screens/SessionFormScreen';
+import { SyncScreen } from '@/features/fitness/screens/SyncScreen';
+import { WorkoutFormScreen } from '@/features/fitness/screens/WorkoutFormScreen';
 import { ItemDetailsScreen } from '@/features/home/screens/ItemDetailsScreen';
 import { useTheme } from '@/theme';
 
@@ -41,6 +47,44 @@ export function RootNavigator() {
               title: route.params.title || t('itemDetails.title'),
               headerBackTitle: t('home.title'),
             })}
+          />
+          <Stack.Screen
+            name="MemberDetails"
+            component={MemberDetailsScreen}
+            options={{ title: t('members.details') }}
+          />
+          <Stack.Screen
+            name="MemberForm"
+            component={MemberFormScreen}
+            options={({ route }) => ({
+              title: route.params?.memberId
+                ? t('memberForm.editTitle')
+                : t('memberForm.newTitle'),
+            })}
+          />
+          <Stack.Screen
+            name="WorkoutForm"
+            component={WorkoutFormScreen}
+            options={({ route }) => ({
+              title: route.params.workoutId
+                ? t('workouts.editTitle')
+                : t('workouts.newTitle'),
+            })}
+          />
+          <Stack.Screen
+            name="SessionForm"
+            component={SessionFormScreen}
+            options={{ title: t('sessions.title') }}
+          />
+          <Stack.Screen
+            name="MemberProgress"
+            component={ProgressScreen}
+            options={{ title: t('progress.title') }}
+          />
+          <Stack.Screen
+            name="Sync"
+            component={SyncScreen}
+            options={{ title: t('sync.title') }}
           />
         </Stack.Group>
       ) : (
