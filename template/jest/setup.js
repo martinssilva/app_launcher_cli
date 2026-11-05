@@ -33,3 +33,20 @@ jest.mock('react-native-nitro-modules', () => ({
 jest.mock('react-native-worklets', () =>
   require('react-native-worklets/src/mock'),
 );
+
+// Shopping: FlashList measures its items with native layout, which Jest does not
+// have. Like `@shopify/flash-list/jestSetup.js`, but cells are the size of a
+// product card in a two-column grid, so a page does not fit in the viewport
+// (otherwise every page would be loaded at mount).
+jest.mock('@shopify/flash-list/dist/recyclerview/utils/measureLayout', () => {
+  const actual = jest.requireActual(
+    '@shopify/flash-list/dist/recyclerview/utils/measureLayout',
+  );
+  const viewport = { x: 0, y: 0, width: 400, height: 800 };
+  return {
+    ...actual,
+    measureParentSize: jest.fn(() => viewport),
+    measureFirstChildLayout: jest.fn(() => viewport),
+    measureItemLayout: jest.fn(() => ({ x: 0, y: 0, width: 200, height: 320 })),
+  };
+});

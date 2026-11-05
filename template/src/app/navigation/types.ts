@@ -7,6 +7,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type MainTabParamList = {
   Home: undefined;
+  Shop: undefined;
+  Favorites: undefined;
+  Cart: undefined;
   Settings: undefined;
 };
 
@@ -17,6 +20,12 @@ export type RootStackParamList = {
   ResetPassword: { email: string };
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   ItemDetails: { id: string; title: string };
+  // Shopping
+  ProductDetails: { id: string; name: string };
+  Checkout: undefined;
+  OrderConfirmation: { orderId: string };
+  Orders: undefined;
+  OrderDetails: { id: string; number: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

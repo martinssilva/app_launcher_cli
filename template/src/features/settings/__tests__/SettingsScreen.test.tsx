@@ -13,7 +13,9 @@ afterEach(async () => {
 describe('SettingsScreen', () => {
   it('changes the theme and the language', async () => {
     const user = userEvent.setup();
-    const { store } = await renderWithProviders(<SettingsScreen />);
+    const { store } = await renderWithProviders(<SettingsScreen />, {
+      withNavigation: true,
+    });
 
     await user.press(screen.getByTestId(testIDs.settings.themeOption('dark')));
     expect(store.getState().settings.theme).toBe('dark');

@@ -6,6 +6,7 @@ import {
   mockDb,
   type MockUser,
 } from './db';
+import { shoppingMockRoutes } from './shopping/routes';
 
 export interface MockRequest {
   method: string;
@@ -21,7 +22,7 @@ export interface MockResponse {
   data?: unknown;
 }
 
-interface MockRoute {
+export interface MockRoute {
   method: string;
   path: string;
   handler: (request: MockRequest) => MockResponse;
@@ -173,6 +174,7 @@ export const mockRoutes: MockRoute[] = [
         : { status: 404, data: { message: 'Item not found' } };
     },
   },
+  ...shoppingMockRoutes,
 ];
 
 function matchPath(

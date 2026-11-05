@@ -8,7 +8,12 @@ import { ForgotPasswordScreen } from '@/features/auth/screens/ForgotPasswordScre
 import { LoginScreen } from '@/features/auth/screens/LoginScreen';
 import { RegisterScreen } from '@/features/auth/screens/RegisterScreen';
 import { ResetPasswordScreen } from '@/features/auth/screens/ResetPasswordScreen';
+import { ProductDetailsScreen } from '@/features/catalog/screens/ProductDetailsScreen';
+import { CheckoutScreen } from '@/features/checkout/screens/CheckoutScreen';
+import { OrderConfirmationScreen } from '@/features/checkout/screens/OrderConfirmationScreen';
 import { ItemDetailsScreen } from '@/features/home/screens/ItemDetailsScreen';
+import { OrderDetailsScreen } from '@/features/orders/screens/OrderDetailsScreen';
+import { OrdersScreen } from '@/features/orders/screens/OrdersScreen';
 import { useTheme } from '@/theme';
 
 import { MainTabs } from './MainTabs';
@@ -40,6 +45,39 @@ export function RootNavigator() {
             options={({ route }) => ({
               title: route.params.title || t('itemDetails.title'),
               headerBackTitle: t('home.title'),
+            })}
+          />
+          <Stack.Screen
+            name="ProductDetails"
+            component={ProductDetailsScreen}
+            options={({ route }) => ({
+              title: route.params.name || t('productDetails.title'),
+            })}
+          />
+          <Stack.Screen
+            name="Checkout"
+            component={CheckoutScreen}
+            options={{ title: t('checkout.title') }}
+          />
+          <Stack.Screen
+            name="OrderConfirmation"
+            component={OrderConfirmationScreen}
+            options={{
+              title: t('orderConfirmation.title'),
+              headerBackVisible: false,
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="Orders"
+            component={OrdersScreen}
+            options={{ title: t('orders.title') }}
+          />
+          <Stack.Screen
+            name="OrderDetails"
+            component={OrderDetailsScreen}
+            options={({ route }) => ({
+              title: t('orders.number', { number: route.params.number }),
             })}
           />
         </Stack.Group>

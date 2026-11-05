@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +35,7 @@ export function SettingsScreen() {
   const { t } = useTranslation();
   const styles = useStyles();
   const dispatch = useAppDispatch();
+  const navigation = useNavigation();
   const user = useAppSelector(selectCurrentUser);
   const themePreference = useAppSelector(selectThemePreference);
   const languagePreference = useAppSelector(selectLanguagePreference);
@@ -112,6 +114,12 @@ export function SettingsScreen() {
         {user ? (
           <Text>{t('settings.signedInAs', { email: user.email })}</Text>
         ) : null}
+        <Button
+          title={t('orders.title')}
+          variant="secondary"
+          onPress={() => navigation.navigate('Orders')}
+          testID={testIDs.orders.openButton}
+        />
         <Button
           title={t('settings.logout')}
           variant="danger"
