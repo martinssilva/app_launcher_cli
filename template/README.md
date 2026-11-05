@@ -6,6 +6,9 @@ React Native CLI app generated from
 TypeScript · Redux Toolkit + RTK Query · Axios · React Navigation ·
 Reanimated · Gesture Handler · MMKV · i18next · Jest + Testing Library
 
+**Office template**: agenda, tasks and documents on top of the base launcher.
+See [Office features](#office-features).
+
 ---
 
 ## Getting started
@@ -42,6 +45,47 @@ password reset code is `123456`).
 | `npm test` / `test:watch` / `test:coverage`          | Jest + React Native Testing Library                                        |
 | `npm run validate`                                   | typecheck + lint + tests (run it before every PR)                          |
 | `npm run splash:generate`                            | Regenerates the native splash screen from `src/assets/bootsplash/logo.svg` |
+
+## Office features
+
+| Tab / screen       | What it does                                                                                      | Code                 |
+| ------------------ | ------------------------------------------------------------------------------------------------- | -------------------- |
+| Agenda             | Month calendar with event dots, events of the selected day, create/edit/delete events             | `features/agenda`    |
+| Tasks              | Search (debounced), status/assignee/due-date filters, infinite scroll, details with status change | `features/tasks`     |
+| Documents          | Pick a file, upload it (multipart) with a progress bar and retry, open and delete documents       | `features/documents` |
+| Settings → Account | Edit profile and change password                                                                  | `features/account`   |
+
+Libraries added by this template:
+[`react-native-calendars`](https://github.com/wix/react-native-calendars)
+(pure JS, themed and translated in `features/agenda/components`) and
+[`@react-native-documents/picker`](https://react-native-documents.github.io/)
+(native, autolinked; no permissions needed on iOS or Android).
+
+Notes:
+
+- Event dates and due dates are `YYYY-MM-DD` strings in local time and event
+  times are `HH:mm` (`src/utils/dates.ts`), which avoids time-zone shifts.
+- Tasks use an RTK Query **infinite query** (`useGetTasksInfiniteQuery` +
+  `fetchNextPage`); each filter combination has its own cache entry.
+- Uploads call `apiClient` directly (progress callbacks are not serializable
+  RTK Query state) with `Content-Type: multipart/form-data`; without that
+  header axios would turn the `FormData` into JSON. Files are opened with
+  `Linking.openURL(document.url)`.
+
+Office endpoints (all authenticated) and the mock API values to try them:
+
+| Endpoint                                                              | Notes                                                                                |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `GET /events?from&to`, `GET/PATCH/DELETE /events/:id`, `POST /events` | Event: `{ id, title, date, startTime, endTime, location, description }`              |
+| `GET /tasks?search&status&assignee=me&due&page&limit`                 | Paginated `{ data, page, limit, total, hasMore }`; `due`: `overdue`, `today`, `week` |
+| `GET /tasks/:id`, `PATCH /tasks/:id`                                  | `PATCH` body: `{ status: 'todo' \| 'in_progress' \| 'done' }`                        |
+| `GET /documents`, `POST /documents`, `DELETE /documents/:id`          | Upload field: `file`. Mock rejects `.exe`/`.bat` with `415`                          |
+| `PATCH /me`                                                           | `{ name, email }` → updated user (`409` if the e-mail is taken)                      |
+| `POST /auth/change-password`                                          | `{ currentPassword, newPassword }` → `204`; mock: current `wrong-password` → `400`   |
+
+The mock data (events around today, 40 tasks, 4 documents) lives in
+`src/services/api/mock/office/`. Mock document URLs point to
+`files.example.com`, so opening them only works with a real backend.
 
 ## Project structure
 
