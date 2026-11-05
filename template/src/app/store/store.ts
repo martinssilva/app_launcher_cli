@@ -28,7 +28,7 @@ const persistConfig: PersistConfig<RootState> = {
   key: 'root',
   version: 1,
   storage: reduxStorage,
-  whitelist: ['auth', 'settings'],
+  whitelist: ['auth', 'settings', 'watchlist'],
   // MMKV reads are synchronous, so the default 5s rehydration timeout is useless.
   timeout: 0,
 };

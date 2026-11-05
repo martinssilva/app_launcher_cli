@@ -6,6 +6,10 @@ React Native CLI app generated from
 TypeScript · Redux Toolkit + RTK Query · Axios · React Navigation ·
 Reanimated · Gesture Handler · MMKV · i18next · Jest + Testing Library
 
+**Finance template**: real-time quotes over WebSocket, line and candlestick
+charts and a persisted watchlist on top of the base launcher. See
+[Finance features](#finance-features).
+
 ---
 
 ## Getting started
@@ -42,6 +46,97 @@ password reset code is `123456`).
 | `npm test` / `test:watch` / `test:coverage`          | Jest + React Native Testing Library                                        |
 | `npm run validate`                                   | typecheck + lint + tests (run it before every PR)                          |
 | `npm run splash:generate`                            | Regenerates the native splash screen from `src/assets/bootsplash/logo.svg` |
+
+## Finance features
+
+| Tab / screen  | What it does                                                                                                                             | Code                 |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| Watchlist     | Your assets with live prices and daily change, connection status, star to remove, empty state that leads to Markets                      | `features/watchlist` |
+| Markets       | Stocks and crypto with live prices, debounced search, type filter, star to add to the watchlist                                          | `features/markets`   |
+| Asset details | Live price, line or candlestick chart per period (1D, 1W, 1M, 1Y) with a touch cursor, change and range of the period, statistics, about | `features/markets`   |
+
+Library added by this template:
+[`react-native-wagmi-charts`](https://github.com/coinjar/react-native-wagmi-charts)
+(JavaScript only, built on Reanimated, Gesture Handler and `react-native-svg`,
+which the base already has; nothing to link).
+
+### Real-time quotes
+
+- `features/markets/services/quoteSocket.ts` (`QuoteSocket`) keeps **one**
+  WebSocket for the whole app:
+  - **per-symbol subscriptions**, reference counted: the server gets
+    `subscribe` once per symbol and `unsubscribe` when the last screen using
+    it leaves; the socket opens with the first subscription and closes with
+    the last one;
+  - **exponential reconnection** (1s, 2s, 4s... up to 30s, plus up to 20%
+    jitter), subscribing every symbol again once connected;
+  - **heartbeat**: a `ping` every 15s; if nothing arrives within 10s the
+    connection is replaced (mobile networks drop sockets silently);
+  - closed while the app is in the background and reopened (no backoff) when
+    it comes back (`services/quoteStream.ts`, `AppState`).
+- RTK Query integration: `getQuotes(symbols)` loads a snapshot with
+  `GET /quotes`, then its `onCacheEntryAdded` subscribes to the socket and
+  writes every update into that cache entry with `updateCachedData`.
+  Components call `useLiveQuotes(symbols)`; the subscription ends 15 seconds
+  after the last component using it unmounts. If the snapshot fails, the
+  screens show "Prices are unavailable" with a retry button.
+- The socket URL of each environment is in `features/markets/config.ts`. In
+  `development` (`env.useMockApi`) a local emitter replaces the network:
+  `MockQuoteSocket` (`services/api/mock/finance/quoteServer.ts`) has the same
+  surface as `WebSocket`, moves the subscribed prices every second and runs
+  on timers only, so it works with Jest fake timers.
+
+WebSocket protocol (JSON text messages). Adapt `parseMessage` and the
+messages sent in `quoteSocket.ts` to your provider; if it needs the access
+token, add it to the URL (or send it as the first message) in `connect()`.
+
+| Direction        | Message                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| client to server | `{ "type": "subscribe", "symbols": ["AAPL", "BTC"] }`, `{ "type": "unsubscribe", "symbols": [...] }`   |
+| client to server | `{ "type": "ping" }`                                                                                   |
+| server to client | `{ "type": "quotes", "data": [Quote] }`: the current quotes right after `subscribe`, then every update |
+| server to client | `{ "type": "pong" }`, `{ "type": "error", "message": "..." }`                                          |
+
+### Watchlist
+
+`features/watchlist/watchlistSlice.ts` holds the symbols (default: AAPL,
+NVDA, BTC, ETH). It is persisted to MMKV (the redux-persist `whitelist` in
+`src/app/store/store.ts`) and goes back to the defaults on sign-out. Move it
+to your backend if it must follow the user across devices.
+
+### Endpoints
+
+All authenticated. A `Quote` is
+`{ symbol, price, change, changePercent, open, high, low, previousClose, volume, timestamp }`
+(`change*` against the previous close, `timestamp` in epoch milliseconds).
+
+| Endpoint                                            | Response                                                                                                 |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET /assets?search&type&symbols`                   | `[{ symbol, name, type: 'stock' \| 'crypto', exchange, currency }]`; `symbols=AAPL,BTC` keeps that order |
+| `GET /assets/:symbol`                               | Asset plus `{ description, marketCap }`                                                                  |
+| `GET /assets/:symbol/candles?period=1D\|1W\|1M\|1Y` | `{ symbol, period, candles: [{ timestamp, open, high, low, close, volume }] }`                           |
+| `GET /quotes?symbols=AAPL,BTC`                      | `[Quote]` (unknown symbols are skipped)                                                                  |
+
+The mock market (`src/services/api/mock/finance/`) has 8 stocks and 4 crypto
+assets with made-up prices; the random walk is seeded, so it starts the same
+on every reload. Candles end at the current price, and the 1D series starts
+at the previous close. Tests use `mockQuoteServer` to push prices
+(`setPrice`), drop connections (`dropConnections`, `setOffline`) and turn the
+random moves off (`config.tickIntervalMs = 0`).
+
+Notes:
+
+- Prices are formatted with `Intl.NumberFormat` in the app language
+  (`features/markets/format.ts`); the chart tooltips use the library's own
+  number format.
+- `react-native-wagmi-charts` passes dependency arrays to Reanimated's
+  `useDerivedValue`, which ignores them on native and logs "Dependencies
+  should only be used on the web" once per call site. It is harmless and
+  hidden from LogBox (`PriceChart.tsx`) and from Jest (`jest/setup.js`).
+- Jest: the `d3-*` packages used by the charts ship ESM `.mjs` files only, so
+  `jest.config.js` transforms them.
+- Markets subscribes to every symbol in the list. With a large catalog,
+  subscribe only to the visible rows (`FlatList` `onViewableItemsChanged`).
 
 ## Project structure
 

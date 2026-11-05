@@ -7,6 +7,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type MainTabParamList = {
   Home: undefined;
+  // Finance
+  Watchlist: undefined;
+  Markets: undefined;
   Settings: undefined;
 };
 
@@ -17,6 +20,8 @@ export type RootStackParamList = {
   ResetPassword: { email: string };
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   ItemDetails: { id: string; title: string };
+  // Finance
+  AssetDetails: { symbol: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
