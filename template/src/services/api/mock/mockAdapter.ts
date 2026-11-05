@@ -1,6 +1,7 @@
 import axios, {
   AxiosError,
   type AxiosAdapter,
+  type AxiosProgressEvent,
   type AxiosResponse,
   CanceledError,
   type InternalAxiosRequestConfig,
@@ -52,6 +53,33 @@ function parseQuery(config: InternalAxiosRequestConfig) {
   return { ...query, ...(config.params as Record<string, unknown>) };
 }
 
+const UPLOAD_STEPS = 5;
+
+/**
+ * Waits for the simulated latency. Requests with `onUploadProgress` (uploads)
+ * take one latency per step and report progress, so progress bars work
+ * without a backend.
+ */
+async function simulateLatency(config: InternalAxiosRequestConfig) {
+  const { onUploadProgress } = config;
+  if (!onUploadProgress) {
+    await wait(mockApiConfig.delayMs);
+    return;
+  }
+  for (let step = 1; step <= UPLOAD_STEPS; step += 1) {
+    await wait(mockApiConfig.delayMs);
+    const event: AxiosProgressEvent = {
+      loaded: step,
+      total: UPLOAD_STEPS,
+      progress: step / UPLOAD_STEPS,
+      bytes: 1,
+      lengthComputable: true,
+      upload: true,
+    };
+    onUploadProgress(event);
+  }
+}
+
 function throwIfAborted(config: InternalAxiosRequestConfig) {
   const signal = config.signal as AbortSignal | undefined;
   if (signal?.aborted) {
@@ -78,7 +106,7 @@ export function createMockAdapter(): AxiosAdapter {
     }
 
     throwIfAborted(config);
-    await wait(mockApiConfig.delayMs);
+    await simulateLatency(config);
     throwIfAborted(config);
 
     const authorization = config.headers.get('Authorization');
@@ -93,7 +121,12 @@ export function createMockAdapter(): AxiosAdapter {
     });
 
     const response: AxiosResponse = {
-      data: result.data ?? null,
+      // Serialize like a real network: the app (and Redux, which freezes what
+      // it stores) must never hold references to the mock database objects.
+      data:
+        result.data === undefined
+          ? null
+          : JSON.parse(JSON.stringify(result.data)),
       status: result.status,
       statusText: String(result.status),
       headers: {},
