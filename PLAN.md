@@ -4,7 +4,7 @@ Plano vivo do projeto: objetivo, decisões, status, escopo dos templates e
 próximos passos. Atualize-o (na `main`) sempre que um item mudar de estado.
 
 - Repositório: https://github.com/martinssilva/app_launcher_cli
-- Última atualização: 2026-11-04 (formulários e auth na base)
+- Última atualização: 2026-11-05 (office v1 disponível)
 
 ## 1. Objetivo
 
@@ -47,36 +47,39 @@ npx @react-native-community/cli@latest init MeuApp --template martinssilva/app_l
 - [x] Fluxo do template validado localmente (pack → `init --template` → typecheck, lint, testes, bundles de release)
 - [x] CLAUDE.md e PLAN.md
 - [x] CI verde na `main`, incluindo o primeiro build Android (runs #1 a #3)
-- [ ] Formulários (`react-hook-form` + `zod`), cadastro e recuperação de senha na base (PR aberto)
+- [x] Formulários (`react-hook-form` + `zod`), cadastro e recuperação de senha na base (PR #2)
+- [ ] Melhorias genéricas vindas da office: serialização das respostas da API mock, progresso de upload simulado, `act()` antes do cleanup dos testes (PR aberto)
 - [ ] Teste manual no emulador Android e no simulador iOS (roteiro na seção 4)
 - [ ] GitHub: preencher "About" e topics; proteger a `main` exigindo o CI
 
 ### Templates
 
-| Branch              | Status    |
-| ------------------- | --------- |
-| `template/office`   | Próximo   |
-| `template/shopping` | Planejado |
-| `template/finance`  | Planejado |
-| `template/fitness`  | Planejado |
+| Branch              | Status                                                |
+| ------------------- | ----------------------------------------------------- |
+| `template/office`   | v1 disponível (PR #3); falta teste manual em aparelho |
+| `template/shopping` | Próximo                                               |
+| `template/finance`  | Planejado                                             |
+| `template/fitness`  | Planejado                                             |
 
 ## 4. Próximos passos
 
-1. **Mergear na `main` o PR de formulários + cadastro + recuperação de senha.**
-2. **Criar `template/office`** a partir da `main` (no GitHub) e implementar o escopo da seção 5.1.
+1. **Mergear na `main` o PR das melhorias genéricas** e depois sincronizar a `template/office`
+   com um PR `main` → `template/office` (_Create a merge commit_); deve entrar sem conflitos.
+2. **Teste manual da office** (Android e iOS): seletor de arquivos e upload de um arquivo
+   `content://` no Android, calendário nos temas claro/escuro e em pt-BR, paginação de tarefas.
 3. **Teste manual da base** (Android e iOS): a splash aparece e some; login pela API mock;
    erro de credencial (senha `wrong-password`); cadastro; recuperação de senha
    (código `123456`); abas; detalhe de item; tema claro/escuro; idioma en/pt-BR;
    logout; fechar e reabrir o app mantém a sessão; `npm run start:staging`
    mostra "staging" em Configurações.
-4. Seguir com shopping, finance e fitness, nessa ordem.
+4. **Começar a `template/shopping`** (seção 5.2) e depois finance e fitness.
 
 ## 5. Escopo dos templates
 
 Bibliotecas listadas são **propostas**: confirmar compatibilidade com RN 0.88 /
 New Architecture antes de instalar.
 
-### 5.1 `template/office` — app de escritório
+### 5.1 `template/office` — app de escritório (v1 entregue)
 
 - **Conta**: perfil (editar dados) e troca de senha. Cadastro e recuperação de senha já vêm da base. Biometria fica para uma versão futura.
 - **Agenda/calendário**: visão mensal + lista do dia; criar, editar e excluir eventos.
@@ -84,6 +87,7 @@ New Architecture antes de instalar.
 - **Upload de documentos**: escolher arquivo, enviar com progresso (multipart), listar e abrir.
 - Rotas mock: `PATCH /me`, `POST /auth/change-password`, `/events`, `/tasks`, `/documents`.
 - Bibliotecas (decididas): `react-native-calendars` (agenda) e `@react-native-documents/picker` (seleção de arquivos).
+- Pendente para versões futuras: biometria; abrir documentos com um visualizador nativo (hoje usa `Linking.openURL`, que só funciona com backend real).
 
 ### 5.2 `template/shopping` — app de compras
 
@@ -165,5 +169,6 @@ por enquanto; repositório público.
 
 ## 11. Histórico
 
+- **2026-11-05**: office v1 mergeada na `template/office` (PR #3: agenda, tarefas, documentos, conta); PR para a `main` com as melhorias genéricas e a office marcada como disponível.
 - **2026-11-04**: CI verde na `main` (incluindo o build Android); decididos formulários e auth na base; PR com `react-hook-form` + `zod`, cadastro e recuperação de senha.
 - **2026-11-04**: base criada (`91d7a18`); repositório renomeado para `app_launcher_cli` (`517def1`); `main` criada; CI #1 disparado; CLAUDE.md e PLAN.md adicionados.
