@@ -23,12 +23,15 @@ import { reduxStorage } from '@/services/storage';
 
 import { rootReducer, type RootState } from './rootReducer';
 
-/** Only these slices are saved to disk. RTK Query cache is never persisted. */
+/**
+ * Only these slices are saved to disk. RTK Query cache is never persisted.
+ * Shopping: the cart and the favorites survive app restarts.
+ */
 const persistConfig: PersistConfig<RootState> = {
   key: 'root',
   version: 1,
   storage: reduxStorage,
-  whitelist: ['auth', 'settings'],
+  whitelist: ['auth', 'settings', 'cart', 'favorites'],
   // MMKV reads are synchronous, so the default 5s rehydration timeout is useless.
   timeout: 0,
 };
@@ -59,7 +62,7 @@ export function makeStore(preloadedState?: Partial<RootState>) {
   return store;
 }
 
-/** The app store: `auth` and `settings` are persisted to MMKV. */
+/** The app store: the slices in `persistConfig.whitelist` are persisted to MMKV. */
 export function makePersistedStore() {
   const store = configureStore({
     reducer: persistReducer(persistConfig, rootReducer),

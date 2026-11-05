@@ -6,6 +6,9 @@ React Native CLI app generated from
 TypeScript · Redux Toolkit + RTK Query · Axios · React Navigation ·
 Reanimated · Gesture Handler · MMKV · i18next · Jest + Testing Library
 
+**Shopping template**: catalog, favorites, cart, checkout and orders on top of
+the base launcher. See [Shopping features](#shopping-features).
+
 ---
 
 ## Getting started
@@ -42,6 +45,58 @@ password reset code is `123456`).
 | `npm test` / `test:watch` / `test:coverage`          | Jest + React Native Testing Library                                        |
 | `npm run validate`                                   | typecheck + lint + tests (run it before every PR)                          |
 | `npm run splash:generate`                            | Regenerates the native splash screen from `src/assets/bootsplash/logo.svg` |
+
+## Shopping features
+
+| Tab / screen         | What it does                                                                                       | Code                 |
+| -------------------- | -------------------------------------------------------------------------------------------------- | -------------------- |
+| Shop                 | Product grid with debounced search, category, on-sale and sort filters, infinite scroll            | `features/catalog`   |
+| Product details      | Photo gallery, price and discount, stock, quantity, add to cart, favorite                          | `features/catalog`   |
+| Favorites            | Products saved with the heart button (kept on the device)                                          | `features/favorites` |
+| Cart                 | Quantities, line totals, subtotal; the tab shows the item count                                    | `features/cart`      |
+| Checkout             | Address form, shipping options, simulated card/cash payment, summary, place order and confirmation | `features/checkout`  |
+| Settings → My orders | Order history and order details                                                                    | `features/orders`    |
+
+Library added by this template:
+[`@shopify/flash-list`](https://shopify.github.io/flash-list/) v2 (JavaScript
+only, New Architecture) for the product grids. Product photos use React
+Native's `Image`, which already caches downloads; `ProductImage` shows a
+themed placeholder while there is no photo or it fails to load (offline).
+
+Notes:
+
+- Prices are **integer amounts in cents** and are formatted with
+  `formatMoney` / `useFormatMoney` (`src/utils/money.ts`, currency `USD`:
+  change `CURRENCY` for your store).
+- The `cart` and `favorites` slices are persisted (`persistConfig.whitelist`
+  in `src/app/store/store.ts`) and cleared on sign out. They keep product
+  snapshots, so they work offline; the server recalculates prices and checks
+  the stock when the order is placed (`409` → the user is asked to review the
+  cart).
+- The catalog uses an RTK Query **infinite query**
+  (`useGetProductsInfiniteQuery` + `fetchNextPage`); each filter combination
+  has its own cache entry. Placing an order invalidates the products (stock)
+  and the order list.
+- Payments are **simulated**: the app sends only the last four digits of the
+  card. With a real provider, collect the card with its SDK and send the
+  token it returns; never send card data to your API.
+
+Shopping endpoints (all authenticated) and the mock API values to try them:
+
+| Endpoint                                                     | Notes                                                                                     |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| `GET /categories`                                            | `[{ id, name }]`                                                                          |
+| `GET /products?search&category&onSale=true&sort&page&limit`  | Paginated `{ data, page, limit, total, hasMore }`; `sort`: `price_asc`, `price_desc`, ... |
+| `GET /products/:id`                                          | Product: `{ id, name, description, category, price, compareAtPrice, images, stock, ... }` |
+| `GET /shipping-options`                                      | `[{ id: 'standard' \| 'express', price, minDays, maxDays, freeOver }]`                    |
+| `GET /orders`, `GET /orders/:id`                             | Newest first                                                                              |
+| `POST /orders` `{ items, address, shippingMethod, payment }` | `201` order; `409` not enough stock; `402` card declined (mock: card ending in `0002`)    |
+
+The mock data (36 products in 6 categories, 2 past orders) lives in
+`src/services/api/mock/shopping/`. Use `4242 4242 4242 4242` (any future
+expiry, any CVC) to pay, or `4000 0000 0000 0002` to see a declined card. One
+product per category is sold out and one has only 2 units left. Photos come
+from `picsum.photos` (needs a network connection).
 
 ## Project structure
 

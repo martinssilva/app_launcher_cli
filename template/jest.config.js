@@ -10,7 +10,7 @@ module.exports = {
     '\\.svg$': '<rootDir>/jest/svgMock.tsx',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation|react-native-.*|nitro-core|react-redux|@reduxjs/toolkit|redux|redux-thunk|reselect|immer)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation|react-native-.*|nitro-core|react-redux|@reduxjs/toolkit|redux|redux-thunk|reselect|immer|@shopify/flash-list)/)',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
