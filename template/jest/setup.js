@@ -33,3 +33,9 @@ jest.mock('react-native-nitro-modules', () => ({
 jest.mock('react-native-worklets', () =>
   require('react-native-worklets/src/mock'),
 );
+
+// Fitness: NetInfo ships its own Jest mock (online by default). Tests change
+// the connection with `setNetworkState()` from src/test-utils/network.ts.
+jest.mock('@react-native-community/netinfo', () =>
+  require('@react-native-community/netinfo/jest/netinfo-mock.js'),
+);

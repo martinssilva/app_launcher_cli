@@ -6,11 +6,15 @@ module.exports = {
     './jest/setup.js',
   ],
   setupFilesAfterEnv: ['./jest/setupAfterEnv.ts'],
+  transform: {
+    // d3 packages (used by react-native-wagmi-charts) ship ESM-only `.mjs` files.
+    '^.+\\.mjs$': 'babel-jest',
+  },
   moduleNameMapper: {
     '\\.svg$': '<rootDir>/jest/svgMock.tsx',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation|react-native-.*|nitro-core|react-redux|@reduxjs/toolkit|redux|redux-thunk|reselect|immer)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-navigation|react-native-.*|nitro-core|react-redux|@reduxjs/toolkit|redux|redux-thunk|reselect|immer|d3-.*|internmap)/)',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
