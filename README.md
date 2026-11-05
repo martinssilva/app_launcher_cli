@@ -98,13 +98,13 @@ template/src/
 
 ## Branches and templates
 
-| Branch              | Template | Adds on top of the base                                         | Status    |
-| ------------------- | -------- | --------------------------------------------------------------- | --------- |
-| `main`              | Launcher | The base described above                                        | Available |
-| `template/office`   | Office   | Complete auth, calendar/agenda, filtered lists, document upload | Planned   |
-| `template/shopping` | Shopping | Catalog, cart, checkout, favorites, search                      | Planned   |
-| `template/finance`  | Finance  | WebSocket real-time quotes, charts, watchlist                   | Planned   |
-| `template/fitness`  | Fitness  | `react-hook-form` + `zod`, CRUD, offline mode, history/progress | Planned   |
+| Branch              | Template | Adds on top of the base                                                                               | Status    |
+| ------------------- | -------- | ----------------------------------------------------------------------------------------------------- | --------- |
+| `main`              | Launcher | The base described above                                                                              | Available |
+| `template/office`   | Office   | Agenda/calendar, tasks with filters and infinite scroll, document upload, profile and password change | Available |
+| `template/shopping` | Shopping | Catalog, cart, checkout, favorites, search                                                            | Planned   |
+| `template/finance`  | Finance  | WebSocket real-time quotes, charts, watchlist                                                         | Planned   |
+| `template/fitness`  | Fitness  | `react-hook-form` + `zod`, CRUD, offline mode, history/progress                                       | Planned   |
 
 Every template branch is created from `main` and receives base updates by
 merging `main` (see [below](#keeping-templates-in-sync-with-main)).
