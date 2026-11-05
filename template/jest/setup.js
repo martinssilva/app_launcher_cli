@@ -33,3 +33,20 @@ jest.mock('react-native-nitro-modules', () => ({
 jest.mock('react-native-worklets', () =>
   require('react-native-worklets/src/mock'),
 );
+
+// Finance: react-native-wagmi-charts passes dependency arrays to Reanimated's
+// useDerivedValue, which ignores them on native (worklet closures are tracked)
+// and warns once per call site. The same message is hidden from LogBox in
+// src/features/markets/components/PriceChart.tsx.
+/* eslint-disable no-console */
+const consoleWarn = console.warn;
+console.warn = (message, ...rest) => {
+  if (
+    typeof message === 'string' &&
+    message.includes('[Reanimated] Dependencies should only be used on the web')
+  ) {
+    return;
+  }
+  consoleWarn(message, ...rest);
+};
+/* eslint-enable no-console */

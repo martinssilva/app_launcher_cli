@@ -1,3 +1,5 @@
+import { resetFinanceData } from './finance/data';
+
 /**
  * In-memory "database" for the mock API. Data resets on every app reload.
  */
@@ -80,4 +82,5 @@ export function resetMockApi(): void {
   mockDb.users.clear();
   mockDb.accessTokens.clear();
   mockDb.refreshTokens.clear();
+  resetFinanceData();
 }

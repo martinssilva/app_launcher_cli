@@ -9,6 +9,7 @@ import { LoginScreen } from '@/features/auth/screens/LoginScreen';
 import { RegisterScreen } from '@/features/auth/screens/RegisterScreen';
 import { ResetPasswordScreen } from '@/features/auth/screens/ResetPasswordScreen';
 import { ItemDetailsScreen } from '@/features/home/screens/ItemDetailsScreen';
+import { AssetDetailsScreen } from '@/features/markets/screens/AssetDetailsScreen';
 import { useTheme } from '@/theme';
 
 import { MainTabs } from './MainTabs';
@@ -41,6 +42,11 @@ export function RootNavigator() {
               title: route.params.title || t('itemDetails.title'),
               headerBackTitle: t('home.title'),
             })}
+          />
+          <Stack.Screen
+            name="AssetDetails"
+            component={AssetDetailsScreen}
+            options={({ route }) => ({ title: route.params.symbol })}
           />
         </Stack.Group>
       ) : (
